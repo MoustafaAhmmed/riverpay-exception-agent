@@ -1,0 +1,10 @@
+Mode: agent (claude-opus-5-5) + policy check
+Events: 19 | schema valid: yes | time: 40s
+Decisions: AUTO_BLOCK=2, AUTO_NOTIFY=1, AUTO_RESOLVE=5, ESCALATE_AGENT_NETWORK=1, ESCALATE_COMPLIANCE=1, ESCALATE_DATA_QUALITY=1, ESCALATE_FRAUD_OPS=4, ESCALATE_RECONCILIATION=2, ESCALATE_TECH_OPS=2
+AUTO_BLOCK: E005, E015
+Sent to a human: 13/19
+Agent matched the written policy: 19/19 (no decision: 0)
+Mismatches: none
+Messages replaced by guardrail: 0
+Tokens: input 114, cache read 62535, cache write 72040, output 11215
+Approx cost: $0.60 | avg turns per event: 2.0

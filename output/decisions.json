@@ -1,0 +1,302 @@
+[
+  {
+    "event_id": "E001",
+    "decision": "AUTO_RESOLVE",
+    "reason_codes": [
+      "R4"
+    ],
+    "customer_message": "Your transfer of 80 KBR did not go through because your wallet balance is too low, and no money left your wallet. Please top up and try again if you still want to send it.",
+    "internal_case_note": "R4: Ledger TXN-2001 C004->C001 80 KBR FAILED, code INSUFFICIENT_FUNDS, matching the event. Customer file: C004 Ibrahim Sow, KYC0, active, available balance 12 KBR, which is less than 80, so the failure is genuine. Watchlist clear, so R11 does not apply. Fraud score 0.08, no new device or beneficiary, not cross-border, so R1 and R2 do not apply. No data or success mismatch, so R12 and R13 do not apply. Action: notify the customer and do not retry. Note: 80 KBR is also above the KYC0 daily limit of 50 KBR, so a resend at this amount would hit the limit even after a top-up.",
+    "tools_used": [
+      "lookup_customer",
+      "lookup_transaction",
+      "check_sanctions"
+    ],
+    "confidence": 0.95,
+    "requires_human": false
+  },
+  {
+    "event_id": "E002",
+    "decision": "ESCALATE_RECONCILIATION",
+    "reason_codes": [
+      "R4"
+    ],
+    "customer_message": "Your 500 KBR transfer did not go through. We are looking into why, so please don't try again until we contact you.",
+    "internal_case_note": "R4: Event says INSUFFICIENT_FUNDS for 500 KBR. Ledger TXN-2002 is FAILED (INSUFFICIENT_FUNDS), C010 to C007, 500 KBR. Customer file shows C010 is KYC2, active, available balance 1800 KBR. That is at least the amount, so the failure reason looks stale or wrong. Watchlist: no hit. Fraud score 0.11, no new device, no new beneficiary, not cross-border, so R1 and R2 do not apply. Next action: reconciliation to check the balance at 09:10:00Z, any holds, and why the transfer was declined. Do not retry automatically.",
+    "tools_used": [
+      "lookup_customer",
+      "lookup_transaction",
+      "check_sanctions"
+    ],
+    "confidence": 0.9,
+    "requires_human": true
+  },
+  {
+    "event_id": "E003",
+    "decision": "AUTO_RESOLVE",
+    "reason_codes": [
+      "R3"
+    ],
+    "customer_message": "Your 80 KBR transfer to this recipient already went through, and we stopped the second one, so you were only charged once. There's no need to send it again.",
+    "internal_case_note": "R3 duplicate confirmed. Ledger TXN-2004 is FAILED with code DUPLICATE_SUSPECTED, C001->C002, 80 KBR, at 10:00:45Z. Recent transfers show TXN-2003 SUCCESS for the same payer, payee and amount at 10:00:00Z, 50s before the event at 10:00:50Z, so inside the 120s window. Watchlist: no hit (R11 does not apply). Fraud score 0.05, no new device or beneficiary, not cross-border, amount below 5000, so R1 and R2 do not apply. C001 is KYC2 and active, balance 8500. Action: none. Do not retry TXN-2004.",
+    "tools_used": [
+      "lookup_customer",
+      "lookup_transaction",
+      "lookup_recent_transfers",
+      "check_sanctions"
+    ],
+    "confidence": 0.97,
+    "requires_human": false
+  },
+  {
+    "event_id": "E004",
+    "decision": "ESCALATE_TECH_OPS",
+    "reason_codes": [
+      "R5"
+    ],
+    "customer_message": "We're checking your 80 KBR transfer and will update you soon. Please don't send it again in the meantime.",
+    "internal_case_note": "Sanctions: C001 not on watchlist (R11 clear). R1/R2 not triggered (fraud 0.09, 80 KBR, not cross-border). Ledger TXN-2005: C001->C003, 80 KBR, FAILED/TIMEOUT at 10:05:00. Recent transfers (120s): only TXN-2005 itself, no SUCCESS with same payer/payee/amount -> not a duplicate (R3 does not apply). Customer KYC2, active, balance 8500. TIMEOUT, amount<5000, fraud<0.70 -> R5 ESCALATE_TECH_OPS. Next: Tech ops confirm with switch/C003 whether funds moved; manual retry only if confirmed not moved. Do not auto-retry.",
+    "tools_used": [
+      "lookup_transaction",
+      "lookup_customer",
+      "check_sanctions",
+      "lookup_recent_transfers"
+    ],
+    "confidence": 0.93,
+    "requires_human": true
+  },
+  {
+    "event_id": "E005",
+    "decision": "AUTO_BLOCK",
+    "reason_codes": [
+      "R1"
+    ],
+    "customer_message": "Your transfer of 2,500 KBR did not go through, and we have paused your wallet for a routine security review. Our team will contact you soon. Please do not try the transfer again until then.",
+    "internal_case_note": "R1 hard fraud block: fraud_score 0.93 (>=0.90), new_device=true (ledger device dev-c007-NEW), new_beneficiary=true (first send to C008), amount 2500 (>=1000). R2 also applies because score is >=0.70, but R1 takes precedence. Ledger TXN-2006: C007->C008, 2500 KBR, FAILED, FRAUD_HOLD, domestic. No money moved. Customer C007 Ngozi Okeke: KYC2, wallet active, balance 22000. Watchlist check: no match, so R11 does not apply. Next action: freeze the wallet and send it to Fraud Ops to verify the customer's identity and device out of band. Do not retry the transfer.",
+    "tools_used": [
+      "lookup_customer",
+      "lookup_transaction",
+      "check_sanctions"
+    ],
+    "confidence": 0.95,
+    "requires_human": true
+  },
+  {
+    "event_id": "E006",
+    "decision": "ESCALATE_FRAUD_OPS",
+    "reason_codes": [
+      "R2"
+    ],
+    "customer_message": "Your transfer of 800 KBR did not go through and is being reviewed. We will contact you soon, so please do not send it again for now.",
+    "internal_case_note": "R2: fraud_score 0.75 >= 0.70 → ESCALATE_FRAUD_OPS. R1 not met (score <0.90, no new device/beneficiary, amount 800 <1000). R11 clear (C003 Fatima Diallo not on watchlist). R13 fine: customer and txn found. Ledger TXN-2007: C003→C011, 800 KBR, FAILED, FRAUD_HOLD, not cross-border; matches event. Customer KYC2, active, balance 12000. Next: Fraud Ops to review the hold and contact the customer. No retry.",
+    "tools_used": [
+      "lookup_customer",
+      "lookup_transaction",
+      "check_sanctions"
+    ],
+    "confidence": 0.93,
+    "requires_human": true
+  },
+  {
+    "event_id": "E007",
+    "decision": "ESCALATE_FRAUD_OPS",
+    "reason_codes": [
+      "R2"
+    ],
+    "customer_message": "Your transfer of 8,000 KBR is being reviewed by our team, and we will update you soon. Please do not send it again in the meantime.",
+    "internal_case_note": "R2: amount 8000 KBR >= 5000 high-value threshold → ESCALATE_FRAUD_OPS, even though fraud_score is 0.1. R11: C007 (Ngozi Okeke) is not on the watchlist. R1 does not apply (score 0.1, no new device or new beneficiary). R13: customer and txn both found. Ledger TXN-2008: C007→C001, 8000 KBR, FAILED, failure_code MANUAL_REVIEW, domestic. Customer KYC2, active, balance 22000, daily limit 20000, so funds and limit are fine. No R12 conflict because the event does not claim success. Next action: Fraud Ops to do a manual high-value review. Do not auto-retry.",
+    "tools_used": [
+      "lookup_customer",
+      "lookup_transaction",
+      "check_sanctions"
+    ],
+    "confidence": 0.95,
+    "requires_human": true
+  },
+  {
+    "event_id": "E008",
+    "decision": "AUTO_RESOLVE",
+    "reason_codes": [
+      "R6"
+    ],
+    "customer_message": "Your transfer of 60 KBR did not go through because we could not find the recipient's wallet, and no money left your account. Please check the recipient's details and try again.",
+    "internal_case_note": "R6 beneficiary not found. Ledger TXN-2009: FAILED, BENEFICIARY_NOT_FOUND, payer C002, payee empty, 60 KBR, domestic. Customer C002: KYC1, active, balance 400 KBR. Watchlist: no match (R11 does not apply). Fraud 0.04, amount 60: R1 and R2 do not apply. No R13/R12/R9/R10 triggers. Action: notify sender that no funds moved. No retry.",
+    "tools_used": [
+      "lookup_customer",
+      "lookup_transaction",
+      "check_sanctions"
+    ],
+    "confidence": 0.97,
+    "requires_human": false
+  },
+  {
+    "event_id": "E009",
+    "decision": "AUTO_RESOLVE",
+    "reason_codes": [
+      "R7"
+    ],
+    "customer_message": "Your transfer of 200 KBR did not go through because it is over your daily sending limit of 50 KBR. No money left your wallet.",
+    "internal_case_note": "R7 limit exceeded. Ledger TXN-2010: C004->C002, 200 KBR, FAILED, LIMIT_EXCEEDED, not cross-border. Customer master: KYC0 (daily limit 50 KBR), wallet active, balance 12 KBR. The event payload says KYC1, but the customer file says KYC0, so the customer file wins and we quoted 50 KBR. Watchlist: no match (R11 does not apply). Fraud score 0.03, no new device or beneficiary, so R1 and R2 do not apply. Do not retry. Next step (optional): tell the customer how to upgrade KYC if they need a higher limit.",
+    "tools_used": [
+      "lookup_customer",
+      "lookup_transaction",
+      "check_sanctions"
+    ],
+    "confidence": 0.95,
+    "requires_human": false
+  },
+  {
+    "event_id": "E010",
+    "decision": "AUTO_NOTIFY",
+    "reason_codes": [
+      "R8"
+    ],
+    "customer_message": "Your cash float is running low (80 KBR). Please top up soon so you can keep serving customers.",
+    "internal_case_note": "R8: Agent A002 (Sahelton Junction) float 80 KBR is >0 and below the 500 KBR warning level. Pending cash-out queue is 2, so the escalation case (float 0 and queue >=5) does not apply. No customer or transaction on the event, so no watchlist check was needed. Next action: notify the agent and territory manager TM-Inland to arrange a float top-up.",
+    "tools_used": [
+      "lookup_agent"
+    ],
+    "confidence": 0.97,
+    "requires_human": false
+  },
+  {
+    "event_id": "E011",
+    "decision": "ESCALATE_AGENT_NETWORK",
+    "reason_codes": [
+      "R8"
+    ],
+    "customer_message": "Your float is empty and customers are waiting for cash-outs. We have sent this to the agent network team so they can help you top up as soon as possible.",
+    "internal_case_note": "E011 agent_float_low, A003 (Airport Kiosk, Port Mbeka, TM-North). lookup_agent: float_kbr=0.0, warning=500, pending_cashout_queue=9. R8: float=0 AND queue>=5 -> ESCALATE_AGENT_NETWORK. No customer/txn on event so the watchlist check and R13 do not apply. Next action: Agent Network to arrange an urgent float rebalance and inform TM-North; think about sending the 9 queued customers to a nearby agent.",
+    "tools_used": [
+      "lookup_agent"
+    ],
+    "confidence": 0.95,
+    "requires_human": true
+  },
+  {
+    "event_id": "E012",
+    "decision": "ESCALATE_COMPLIANCE",
+    "reason_codes": [
+      "R9"
+    ],
+    "customer_message": "We could not confirm your ID details against your wallet profile, so our team is reviewing them. We will contact you soon about next steps.",
+    "internal_case_note": "E012 kyc_mismatch (NAME_MISMATCH) at agent A001 cash-in. Customer C008 found: Jean-Baptiste Nkrumah, KYC1, active, balance 150 KBR. Watchlist check: no match (R11 does not apply). R1/R2 do not apply (fraud_score 0.22, amount 0, no new device, no new beneficiary, not cross-border). No txn_id is needed for a KYC event, so R13 does not apply. Under R9 this goes to Compliance; identity must not be auto-approved. Next step: Compliance compares the ID card name with the wallet profile and asks the customer or agent for documents if needed.",
+    "tools_used": [
+      "lookup_customer",
+      "check_sanctions"
+    ],
+    "confidence": 0.95,
+    "requires_human": true
+  },
+  {
+    "event_id": "E013",
+    "decision": "AUTO_RESOLVE",
+    "reason_codes": [
+      "R10"
+    ],
+    "customer_message": "Your wallet is locked after too many wrong PIN attempts, and your 400 KBR transfer did not go through. To reset your PIN, dial *123*5# or use the reset option in the app.",
+    "internal_case_note": "R10: PIN locked, amount 400 < 2000 -> AUTO_RESOLVE. Wallet stays locked. Customer was sent the *123*5# / in-app reset steps. Ledger TXN-2012: C006->C001, 400 KBR, FAILED PIN_LOCKED, no cross-border. Customer C006 KYC1, wallet_status pin_locked, balance 900. Watchlist: no match (R11 not triggered). Fraud score 0.18, no new device or new beneficiary, so R1 and R2 do not apply. No R13 issue. Next action: none. Do not unlock and do not retry.",
+    "tools_used": [
+      "lookup_customer",
+      "lookup_transaction",
+      "check_sanctions"
+    ],
+    "confidence": 0.96,
+    "requires_human": false
+  },
+  {
+    "event_id": "E014",
+    "decision": "ESCALATE_FRAUD_OPS",
+    "reason_codes": [
+      "R10"
+    ],
+    "customer_message": "Your PIN is locked after several wrong attempts, and your 3,000 KBR transfer did not go through. Our team is reviewing your account and will contact you. You can reset your PIN by dialing *123*5# or in the app.",
+    "internal_case_note": "R10: PIN_LOCKED on amount 3000 KBR (>=2000) -> ESCALATE_FRAUD_OPS. Ledger TXN-2013: C007->C002, 3000 KBR, FAILED, PIN_LOCKED, device dev-c007-a, not cross-border (matches event). Customer C007 Ngozi Okeke KYC2, active, balance 22000. Watchlist: no hit (R11 not fired). fraud_score 0.21, no new device/beneficiary, so R1/R2 do not fire. R13/R12/R9 not applicable. Next step: Fraud Ops to review the 3 failed PIN attempts and contact the customer. Keep the wallet PIN locked. Do not unlock and do not retry the transfer.",
+    "tools_used": [
+      "lookup_customer",
+      "lookup_transaction",
+      "check_sanctions"
+    ],
+    "confidence": 0.93,
+    "requires_human": true
+  },
+  {
+    "event_id": "E015",
+    "decision": "AUTO_BLOCK",
+    "reason_codes": [
+      "R11"
+    ],
+    "customer_message": "Your transfer is on hold while we carry out a routine review. We will contact you once the review is complete.",
+    "internal_case_note": "R11: check_sanctions shows C005 (Elena Petrova) on INTERNAL_WATCH (customer_id + name match, added 2026-03-12). R11 has highest precedence -> AUTO_BLOCK and freeze wallet. Ledger: TXN-2015 C005->C001 200 KBR, status FAILED, failure_code MANUAL_REVIEW, matches the event. No funds moved. Customer: KYC2, active, balance 3000. Fraud score 0.07, no new device or beneficiary, not cross-border, so R1/R2 do not fire. Next step: compliance reviews the watchlist hit. Do not retry or unlock.",
+    "tools_used": [
+      "lookup_customer",
+      "lookup_transaction",
+      "check_sanctions"
+    ],
+    "confidence": 0.95,
+    "requires_human": true
+  },
+  {
+    "event_id": "E016",
+    "decision": "ESCALATE_TECH_OPS",
+    "reason_codes": [
+      "R5"
+    ],
+    "customer_message": "We are checking your 200 KBR transfer and will update you shortly. Please do not send it again in the meantime.",
+    "internal_case_note": "R5: TIMEOUT, amount 200 < 5000, fraud_score 0.2 < 0.70. Ledger TXN-2016: C012->C011, 200 KBR, FAILED/TIMEOUT, ussd, not cross-border. Customer C012 KYC2, active, balance 700 KBR. Watchlist: no match (R11 clear). R1/R2/R13/R12/R9 not triggered. Next: Tech Ops to confirm with switch/USSD gateway whether debit/credit posted; manual retry may be considered only after confirming no funds moved. Do NOT auto-retry. Customer is calling the contact center: tell them not to resend.",
+    "tools_used": [
+      "lookup_customer",
+      "lookup_transaction",
+      "check_sanctions"
+    ],
+    "confidence": 0.93,
+    "requires_human": true
+  },
+  {
+    "event_id": "E017",
+    "decision": "ESCALATE_DATA_QUALITY",
+    "reason_codes": [
+      "R13"
+    ],
+    "customer_message": "We are checking your 75 KBR transfer and will update you soon. Please do not send it again in the meantime.",
+    "internal_case_note": "E017: transfer_failed UNKNOWN, txn_id null (notes: ingest dropped txn id). R13 fires: required txn_id missing, takes precedence over R5. Customer C002 Kwame Mensah found, KYC1, active, balance 400 KBR, limit 2000. Watchlist: no match (R11 clear). fraud_score 0.15, no new device/beneficiary, not cross-border, amount 75 -> R1/R2 not triggered. Next: Data Quality to recover txn_id from ingest/ledger (C002 transfers ~75 KBR before 2026-08-20T11:30Z); once ledger status is known route as R5 to Tech Ops. Do not retry.",
+    "tools_used": [
+      "lookup_customer",
+      "check_sanctions"
+    ],
+    "confidence": 0.9,
+    "requires_human": true
+  },
+  {
+    "event_id": "E018",
+    "decision": "ESCALATE_RECONCILIATION",
+    "reason_codes": [
+      "R12"
+    ],
+    "customer_message": "We're still checking the status of your 90 KBR transfer. Please don't send it again, and we'll update you soon.",
+    "internal_case_note": "E018: Event says transfer_completed/SUCCESS (notification service), but the ledger shows TXN-2018 as FAILED with failure_code UNKNOWN (C001->C011, 90 KBR, 11:40:00Z, app). R12: the event and ledger disagree, so this goes to Reconciliation. R5 context: an UNKNOWN failure means we can't yet tell if money moved. Customer C001 is KYC2, active, balance 8500. Sanctions check: no match. R1/R2 not triggered (fraud score 0.06, amount 90, not cross-border). Next: Reconciliation should confirm the real fund movement with the switch/payee C011 and fix the notification-service status mismatch. Do not retry. Tech Ops may need to look at the UNKNOWN failure.",
+    "tools_used": [
+      "lookup_transaction",
+      "lookup_customer",
+      "check_sanctions"
+    ],
+    "confidence": 0.9,
+    "requires_human": true
+  },
+  {
+    "event_id": "E019",
+    "decision": "ESCALATE_FRAUD_OPS",
+    "reason_codes": [
+      "R2"
+    ],
+    "customer_message": "Your transfer of 400 KBR is being reviewed and has not been completed. We will update you soon, so please do not resend it.",
+    "internal_case_note": "R2: ledger TXN-2019 C003->C099 400 KBR status FAILED, failure_code MANUAL_REVIEW, cross_border=true (ledger confirms). R11 checked: C003 (Fatima Diallo) not on watchlist. R1 not met (fraud 0.14, amount <1000). Customer KYC2, active, balance 12000. Next action: Fraud Ops to review the cross-border payment to C099 and decide whether to release it or decline it. No auto-retry.",
+    "tools_used": [
+      "lookup_customer",
+      "lookup_transaction",
+      "check_sanctions"
+    ],
+    "confidence": 0.92,
+    "requires_human": true
+  }
+]
